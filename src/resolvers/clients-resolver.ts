@@ -1,13 +1,13 @@
 import { Arg, Mutation, Query, Resolver } from 'type-graphql'
+import { addOrUpData, getData } from '../aws/middleware/resource'
 import { Client } from '../models/Client'
 
 @Resolver()
 export class ClientResolver {
-    private data: Client[] = [] 
 
     @Query(() => [Client])
     async Client() {
-        return this.data
+        return getData()
     }
 
     @Mutation(() => Client)
@@ -16,7 +16,6 @@ export class ClientResolver {
         @Arg('email') email: string
     ) {
         const id = Math.floor(Date.now() * Math.random()).toString(36)
-        console.log(id);
         
         const user = {
             id,
@@ -24,7 +23,14 @@ export class ClientResolver {
             email
         }
 
-        this.data.push(user)
+        try {
+          await addOrUpData(user)
+            
+        } catch (error) {
+            console.log(error);
+            
+        }
+
 
         return user
     }
